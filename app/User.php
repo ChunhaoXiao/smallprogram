@@ -1,0 +1,254 @@
+<?php
+
+namespace App;
+
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable
+{
+    use Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'openid', 'api_token', 'avatar', 'gender'
+    ];
+
+    // protected $with = [
+    //     'post.pictures',
+
+    // ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+
+    public function post()
+    {
+        return $this->hasOne('App\Models\Post')->withDefault();
+    }
+
+    public function sentFavorites()
+    {
+        return $this->hasMany('App\Models\Favorite', 'from_user');
+    }
+
+    public function receivedFavorites()
+    {
+        return $this->hasMany('App\Models\Favorite', 'to_user');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany('App\Models\Message', 'from')->where('sender_deleted', 0);
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany('App\Models\Message', 'to')->where('receiver_deleted', 0);
+    }
+
+    //黑名单
+    public function blacklists()
+    {
+        return $this->hasMany('App\Models\Blacklist', 'user_id');
+    }
+
+    //被拉黑
+    public function blacklisted()
+    {
+        return $this->hasMany('App\Models\Blacklist', 'black_user_id');
+    }
+
+    
+    //我的收藏
+    public function collections()
+    {
+        return $this->belongsToMany('App\User', 'collections', 'user_id', 'collection_id');
+    }
+
+    //我被收藏
+    public function collectioned()
+    {
+        return $this->belongsToMany('App\User', 'collections', 'collection_id', 'user_id');
+    }
+
+    public function getUser($id)
+    {
+        return self::with('post.pictures')->withCount('favorites')->find($id);
+    }
+
+    public function savePost($data)
+    {
+        if($this->post()->exists())
+        {
+            $this->post->update($data);
+            $this->post->savePictures($data['pictures']);
+            return $this->post;
+        }
+
+        $post = $this->post()->create($data);
+        $post->savePictures($data['pictures']);
+        return $post;
+    }
+
+    public function updateFavorite($data)
+    {
+        if($favorite = $this->sentFavorites()->where($data)->first())
+        {
+            $favorite->delete();
+            return -1;
+        }
+        $this->sentFavorites()->create($data);
+        return 1;
+    }
+
+    public function scopeHasPost($query)
+    {
+        return $query->has('post')->with('post.pictures');
+    }
+
+    public function scopeGender($query, $request)
+    {
+        if(strlen($request->gender))
+        {
+            $gender = $request->gender;
+            if($gender == '1')
+            {
+                return $query->whereHas('post', function($query){
+                    $query->where('gender', '男');
+                });
+            }
+            elseif($gender == '2')
+            {
+                return $query->whereHas('post', function($query){
+                    $query->where('gender', '女');
+                });
+            }
+            else
+            {
+                return $query;
+            }
+        }
+
+        if(!$request->user()->post)
+        {
+            return $query;
+        }
+
+        $gender = $request->user()->post->gender;
+        $gender = $gender == '男' ? '女' : '男';
+        return $query->whereHas('post', function($query) use($gender){
+            $query->where('gender', $gender);
+        });
+    }
+
+    public function scopeOrder($query)
+    {
+        return $query->latest();
+    }
+
+    public function scopeUnblacklisted($query, $id)
+    {
+        return $query->whereDoesntHave('blacklists', function($query) use ($id){
+            $query->where('black_user_id', $id);
+        });
+    }
+
+    public function scopeFavorite($query, $id)
+    {
+        return $query->withCount([
+            'receivedFavorites',
+            'receivedFavorites as myfavorite' => function($query) use($id){
+                $query->where('from_user', $id);
+            },
+            'receivedFavorites as new_favorite' => function($query){
+                $query->where('viewed', 0);
+            }
+        ]);
+    }
+
+    public function scopeCollect($query, $id)
+    {
+        // $query->with(['collections as intercollection' => function($query) use($id){
+        //     $query->where('collection_id', $id)->where();
+        // }]);
+        return $query->withCount(['collectioned as mycollect' => function($query) use($id){
+            $query->where('user_id', $id);
+        }, 'collections as collectme' => function($query)  use($id){
+            $query->where('collection_id', $id);
+        }]);
+    }
+
+    public function getOneMessage($id)
+    {
+        return $this->receivedMessages()->findOrFail($id);
+    }
+
+    public function scopeMessage($query)
+    {
+        $query->withCount(['receivedMessages', 'receivedMessages as new_message' => function($query){
+            $query->where('viewed', 0);
+        }]);
+    }
+
+    public function getBlacklists()
+    {
+        return $this->blacklists()->with('user')->latest()->paginate(10);
+    }
+
+    public function addUserToBlacklist($user_id)
+    {
+        if($this->blacklists()->where('black_user_id', $user_id)->doesntExist())
+        {
+            return $this->blacklists()->create(['black_user_id' => $user_id]);
+        }
+    }
+
+    public function removeUserFromBlacklist($user_id)
+    {
+        if($this->blacklists()->where('black_user_id', $user_id)->exists())
+        {
+            return $this->blacklists()->where('black_user_id', $user_id)->delete();
+        }
+    }
+
+
+    public function updateCollection($user_id)
+    {
+        if($this->collections()->where('collection_id', $user_id)->doesntExist())
+        {
+            return $this->collections()->attach($user_id);
+        }
+        return $this->collections()->detach($user_id);
+    }
+
+    public function getCollects($type = 'collects')
+    {
+        //我的关注的人  
+        if($type == 'collects')
+        {
+            return $this->collections()->withCount(['collections as intercollect' => function($query){
+                $query->where('collection_id', \Auth::id());
+
+            }])->paginate(10);
+        }
+        elseif($type == 'collected')
+        {
+            return $this->collectioned()->paginate(10);
+        }
+
+        //关注我的人
+       // return $this->colletioned()->paginate(10);
+    }
+}
