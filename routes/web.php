@@ -32,3 +32,6 @@ Route::get('bm', function(){
 		$query->where('collection_id', 11);
 	}])->get());
 });
+
+
+Route::get('ttt', 'TextController@index');

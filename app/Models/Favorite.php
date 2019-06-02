@@ -12,8 +12,13 @@ class Favorite extends Model
     	'viewed',
     ];
 
-    public function user()
+    public function fromuser()
     {
     	return $this->belongsTo('App\User', 'from_user');
+    }
+
+    public function touser()
+    {
+    	return $this->belongsTo('App\User', 'to_user');
     }
 }

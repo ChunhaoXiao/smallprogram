@@ -17,11 +17,24 @@ class PostResource extends JsonResource
     {
         return [
             'post' => $request->user ? $this->content : Str::limit($this->content, 75),
+            'nickname' => $this->nickname,
             'gender' => $this->gender,
             'contact' => $this->contact,
             'pictures' => PostPictureResource::collection($request->path() == 'api/users' ? $this->pictures->take(3) : $this->pictures),
-            'created_at' => (string)$this->created_at,
-            'update_at' => (string)$this->updated_at,
+            'created_at' => $this->created_at->toDateString(),
+            'update_at' => $this->updated_at->toDateString(),
+            'gender_index' => array_search($this->gender, ['男', '女']),
+            'marriage_index' => array_search($this->marriage, ['未婚', '离异', '丧偶']),
+            'marriage' => $this->marriage,
+            'user_id' => $this->user_id,
+            'avatarUrl' => substr($this->avatar, 0, 4) == 'http' ? $this->avatar : (!$this->avatar ? '' : asset(\Storage::url($this->avatar))),
+            'avatar' => $this->avatar,
+            'bod' => $this->bod,
+            'region' => $this->location,
+            'hobby' => $this->hobby,
+            'hobby_arr' => array_map('trim', explode(',', $this->hobby)),
+            'content' => $this->content,
+            'is_show' => $this->is_show,
         ];
     }
 }

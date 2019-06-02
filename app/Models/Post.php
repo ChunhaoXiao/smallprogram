@@ -12,6 +12,16 @@ class Post extends Model
     	'gender',
     	'is_show',
     	'contact',
+        'bod',
+        'marriage',
+        'location',
+        'hobby',
+        'nickname',
+        'avatar',
+    ];
+
+    protected $casts = [
+        'location' => 'array',
     ];
 
     public function user()
@@ -51,6 +61,26 @@ class Post extends Model
     		return true;
     	}
     }
+
+    public function setHobbyAttribute($value)
+    {
+        if($value)
+        {
+            $value = str_replace([' ', ',', '，'], ',', $value);
+            $values = array_filter(array_map('trim', explode(',', $value)));
+            if(!empty(($values)))
+            {
+                $this->attributes['hobby'] = implode(',', array_slice($values, 0, 4));
+            }
+        }
+    }
+
+    public function setIsShowAttribute($v)
+    {
+        $this->attributes['is_show'] = intval($v);
+    }
+
+
 
     // public function scopeGender($query, $request)
     // {

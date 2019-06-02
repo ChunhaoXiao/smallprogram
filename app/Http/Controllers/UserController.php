@@ -7,6 +7,7 @@ use Auth;
 use App\User;
 use App\Http\Resources\User as UserResource;
 use App\Http\Resources\UserCollection;
+use App\Events\MemberViewed;
 
 class UserController extends Controller
 {
@@ -17,14 +18,15 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-    	$datas = User::hasPost()->gender($request)->unblacklisted(Auth::id())->order()->paginate(5);
+    	$datas = User::hasPost()->gender($request->gender)->unblacklisted(Auth::id())->order()->paginate(5);
         return new UserCollection($datas);
     }
 
     public function show($id)
     {
     	$user_id = Auth::id();
-    	$user = User::unblacklisted($user_id)->favorite($user_id)->collect($user_id)->find($id);
+    	$user = User::unblacklisted($user_id)->favorite($user_id)->collect($user_id)->with('post')->find($id);
+        event(new MemberViewed($user));
     	return new UserResource($user);
     }
 

@@ -17,7 +17,10 @@ class User extends JsonResource
         return [
             'user_id' => $this->id,
             'name' => $this->name,
-            'avatar' => $this->avatar,
+            'nickname' => $this->post->nickname??'',
+            'location' => $this->post->location[1]??'',
+            'avatar' => $this->avatar_url,
+            //'avatar' => $this->avatar,
             'create_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'open_id' => $this->openid,
@@ -28,8 +31,10 @@ class User extends JsonResource
             'mycollect' => $this->mycollect,
             'collectme' => $this->collectme,
             'intercollect' => $this->intercollect,
+            
+            'bod' => $this->post->bod??'',
 
-            'post' => new PostResource($this->post),
+            'post' =>  new PostResource($this->whenLoaded('post')),
         ];
     }
 

@@ -17,12 +17,13 @@ class CollectController extends Controller
 	{
 		$user = Auth::user();
 		$type = $request->type?? 'collects';
+        //return $user->getCollects($type);
 		return User::collection($user->getCollects($type));
     }
 
     public function store(Request $request)
     {
-    	Auth::user()->updateCollection($request->user_id);
-    	return response()->json('success', 200);
+    	$res = Auth::user()->updateCollection($request->user_id);
+    	return response()->json($res, 200);
     }
 }

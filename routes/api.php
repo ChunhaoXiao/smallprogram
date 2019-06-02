@@ -20,7 +20,7 @@ Route::get('login', 'LoginController@login');
 Route::get('/profile', 'UserProfileController@index');
 //Route::put('/user', );
 
-Route::any('post/upload', 'UploadController@store');
+Route::any('/post/upload', 'UploadController@store');
 Route::post('/post', 'PostController@store');
 Route::get('/posts', 'PostController@index');
 
@@ -43,3 +43,6 @@ Route::get('/collects', 'CollectController@index');
 // Route::get('messages', 'MessageController@index');
 // Route::delete('messages/{id}', 'MessageController@destroy');
 
+Route::get('/test', 'TextController@index');
+
+Route::get('/visits', 'VisitController@index');

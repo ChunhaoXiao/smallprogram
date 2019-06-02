@@ -1,15 +1,25 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
+use Auth;
 
 class UploadController extends Controller
 {
+	public function __construct()
+	{
+		//$this->middleware('auth:api');
+	}
+
     public function store(Request $request)
     {
-    	$path = $request->picture->store('pictures');
-    	$full_path = asset('storage/'.$path);
-    	return response()->json(['status' => 1, 'path' => $full_path, 'savepath' => $path]);
+    	$save_path = $request->picture->store('pictures');
+    	$full_path = asset('storage/'.$save_path);
+    	
+    	return [
+    		'status' => '1',
+    	    'fullpath' => $full_path , 
+    	    'savepath' => $save_path,
+    	];
+    	
     }
 }

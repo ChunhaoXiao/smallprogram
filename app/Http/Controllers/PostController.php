@@ -18,7 +18,11 @@ class PostController extends Controller
 	public function index(Request $request, Post $post)
 	{
 		$user = Auth::user();
-		return $post->order()->with('user')->paginate(5);
+		if($user->post()->exists())
+		{
+			$user->post;
+		}
+		return new UserResource($user);
 	}
 
     public function store(PostStoreRequest $request)

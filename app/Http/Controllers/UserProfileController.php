@@ -12,6 +12,7 @@ class UserProfileController extends Controller
 		$this->middleware('auth:api');
 	}
 
+    //个人中心首页
     public function index()
     {
     	$id = Auth::id();

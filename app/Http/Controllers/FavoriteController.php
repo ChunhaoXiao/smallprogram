@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Http\Requests\FavoriteStoreRequest;
 use Auth;
+use App\Http\Resources\FavoriteResource;
 
 class FavoriteController extends Controller
 {
@@ -14,11 +15,19 @@ class FavoriteController extends Controller
     	$this->middleware('auth:api');
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $type = $request->type ?? 'likes';
     	$user = Auth::user();
-    	$favorites = $user->receivedFavorites()->with('user')->paginate(10);
-    	return $favorites;
+        if($type == 'likes')
+        {
+            $datas = $user->sentFavorites()->with('touser.post')->paginate(10);
+            //return $datas;
+            return FavoriteResource::collection($datas);
+        }
+    	$datas = $user->receivedFavorites()->with('fromuser.post')->paginate(10);
+        //return $datas;
+        return FavoriteResource::collection($datas);
     }
 
     public function store(FavoriteStoreRequest $request)

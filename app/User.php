@@ -19,6 +19,8 @@ class User extends Authenticatable
         'name', 'openid', 'api_token', 'avatar', 'gender'
     ];
 
+    protected $with = ['post'];
+
     // protected $with = [
     //     'post.pictures',
 
@@ -83,6 +85,21 @@ class User extends Authenticatable
         return $this->belongsToMany('App\User', 'collections', 'collection_id', 'user_id');
     }
 
+    public function viewers()
+    {
+        return $this->hasMany('App\Models\Visit', 'viewer_id');
+    }
+
+    public function viewed()
+    {
+        return $this->hasMany('App\Models\Visit', 'viewed_id');
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        return substr($this->post->avatar, 0, 4) == 'http' ? $this->post->avatar : (!$this->post->avatar ? '' : asset(\Storage::url($this->post->avatar)));
+    }
+
     public function getUser($id)
     {
         return self::with('post.pictures')->withCount('favorites')->find($id);
@@ -93,12 +110,12 @@ class User extends Authenticatable
         if($this->post()->exists())
         {
             $this->post->update($data);
-            $this->post->savePictures($data['pictures']);
+           // $this->post->savePictures($data['pictures']);
             return $this->post;
         }
 
         $post = $this->post()->create($data);
-        $post->savePictures($data['pictures']);
+        //$post->savePictures($data['pictures']);
         return $post;
     }
 
@@ -118,39 +135,32 @@ class User extends Authenticatable
         return $query->has('post')->with('post.pictures');
     }
 
-    public function scopeGender($query, $request)
+    //性别过滤
+    public function scopeGender($query, $gender)
     {
-        if(strlen($request->gender))
+        if(!empty($gender))
         {
-            $gender = $request->gender;
-            if($gender == '1')
-            {
-                return $query->whereHas('post', function($query){
-                    $query->where('gender', '男');
-                });
-            }
-            elseif($gender == '2')
-            {
-                return $query->whereHas('post', function($query){
-                    $query->where('gender', '女');
-                });
-            }
-            else
-            {
-                return $query;
-            }
+            return $query->whereHas('post', function($query) use($gender){
+                $query->where('gender', $gender);
+            });
         }
 
-        if(!$request->user()->post)
+        $user_gender = \Auth::user()->post->gender?? '';
+        if($user_gender)
         {
-            return $query;
+            $gender = $user_gender == '男' ? '女': '男';
+            return $query->whereHas('post', function($query) use($gender){
+                $query->where('gender', $gender);
+            });
         }
+        return $query;
 
-        $gender = $request->user()->post->gender;
-        $gender = $gender == '男' ? '女' : '男';
-        return $query->whereHas('post', function($query) use($gender){
-            $query->where('gender', $gender);
-        });
+        // if(!$request->user()->post)
+        // {
+        //     return $query;
+        // }
+
+        
     }
 
     public function scopeOrder($query)
@@ -228,9 +238,11 @@ class User extends Authenticatable
     {
         if($this->collections()->where('collection_id', $user_id)->doesntExist())
         {
-            return $this->collections()->attach($user_id);
+            $this->collections()->attach($user_id);
+            return '1';
         }
-        return $this->collections()->detach($user_id);
+        $this->collections()->detach($user_id);
+        return -1;
     }
 
     public function getCollects($type = 'collects')
