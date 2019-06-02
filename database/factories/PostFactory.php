@@ -13,7 +13,5 @@ $factory->define(App\Models\Post::class, function (Faker $faker) {
         'location' => ['辽宁省', '大连市', '中山区'],
         'marriage' => '未婚',
         'hobby' => '运动,读书',
-
-
     ];
 });

@@ -10,7 +10,7 @@ class Visit extends Model
     	'viewer_id', 'viewed_id', 'numbers'
     ];
 
-    public function viewer()
+    public function viewers()
     {
     	return $this->belongsTo('App\User', 'viewer_id');
     }
