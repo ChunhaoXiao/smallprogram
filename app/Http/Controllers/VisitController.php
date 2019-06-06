@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Http\Resources\VisitResource;
+use App\Http\Resources\User;
 
 class VisitController extends Controller
 {
@@ -14,6 +14,8 @@ class VisitController extends Controller
     public function index(Request $request)
     {
     	$user = $request->user();
-    	return VisitResource::collection($user->getViewHistory($request->type));
+        $datas = $user->getViewHistory($request->type);
+        $target = $request->type == 'viewers' ? 'viewed' : 'viewers';
+        return User::collection($datas->pluck($target));
     }
 }

@@ -18,7 +18,10 @@ class CollectController extends Controller
 	{
 		$user = Auth::user();
 		$type = $request->type?? 'collects';
-		return Follow::collection($user->getCollects($type));
+        $datas = $user->getCollects($type);
+        return User::collection($datas);
+        //return $user->getCollects($type);
+		//return Follow::collection($user->getCollects($type));
     }
 
     public function store(Request $request)

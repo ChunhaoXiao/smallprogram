@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Auth;
-use App\Http\Resources\Blacklist;
+use App\Http\Resources\User;
 
 class BlacklistController extends Controller
 {
@@ -15,7 +15,7 @@ class BlacklistController extends Controller
     public function index()
     {
     	$datas = Auth::user()->getBlacklists();
-        return Blacklist::collection($datas);
+        return User::collection($datas->pluck('user'));
     }
 
     public function store(Request $request)

@@ -216,8 +216,8 @@ class User extends Authenticatable
 
     public function scopeMessage($query)
     {
-        $query->withCount(['receivedMessages', 'receivedMessages as new_message' => function($query){
-            $query->whereNull('viewed_at');
+        $query->withCount(['receivedMessages as totals', 'receivedMessages as new_message' => function($query){
+            $query->where('viewed_at', '1000-01-01 00:00:00');
         }]);
     }
 

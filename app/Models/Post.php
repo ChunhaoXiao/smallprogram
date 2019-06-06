@@ -24,6 +24,18 @@ class Post extends Model
         'location' => 'array',
     ];
 
+    protected $dates = [
+        'updated_at',
+        'created_at',
+        'bod',
+    ];
+
+    public function getBirthAttribute()
+    {
+        //return $this->bod? ->format('Y年');
+        return $this->bod ? $this->bod->format('Y年') : '' ;
+    }
+
     public function user()
     {
     	return $this->belongsTo('App\User');
@@ -33,6 +45,8 @@ class Post extends Model
     {
     	return $this->hasMany('App\Models\PostPicture', 'post_id');
     }
+
+
 
     public function savePictures($pictures)
     {

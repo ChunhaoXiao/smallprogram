@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Http\Requests\FavoriteStoreRequest;
 use Auth;
-use App\Http\Resources\FavoriteResource;
+//use App\Http\Resources\FavoriteResource;
+use App\Http\Resources\User as UserResource;
 
 class FavoriteController extends Controller
 {
@@ -19,7 +20,9 @@ class FavoriteController extends Controller
     {
         $type = $request->type ?? 'likes';
         $datas = Auth::user()->getFavorites($type);
-        return FavoriteResource::collection($datas);
+        $target = $type == 'likes' ? 'touser' : 'fromuser';
+        $users = $datas->pluck($target);
+        return UserResource::collection($users);
     }
 
     public function store(FavoriteStoreRequest $request)

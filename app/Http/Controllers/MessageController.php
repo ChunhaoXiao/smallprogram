@@ -26,6 +26,10 @@ class MessageController extends Controller
         $datas = Message::group($uid)->slice($page)->get();
         $ids = $datas->pluck('mid');
         $res = Message::range($ids)->get();
+        $res->each(function($item) use($uid){
+            $item->target_user = $item->from == $uid ? $item->to_user : $item->from_user;
+        });
+        //return $res;
         return MessageList::collection($res);
 	}
 
