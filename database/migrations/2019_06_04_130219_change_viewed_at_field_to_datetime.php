@@ -14,7 +14,7 @@ class ChangeViewedAtFieldToDatetime extends Migration
     public function up()
     {
         Schema::table('messages', function (Blueprint $table) {
-            $table->dateTime('viewed_at')->change();
+            $table->dateTime('viewed_at')->default(NUll)->change();
         });
     }
 
