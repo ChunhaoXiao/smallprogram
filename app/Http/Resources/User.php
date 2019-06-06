@@ -24,7 +24,7 @@ class User extends JsonResource
             'create_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'open_id' => $this->openid,
-            'favorite_count' => $this->received_favorites_count,
+            'favorite_count' => intval($this->received_favorites_count),
             'new_favorite' => $this->when($request->user()->id == $this->id, $this->new_favorite),
             'new_message' => $this->when($request->user()->id == $this->id, $this->new_message),
             'myfavorite' => $this->myfavorite? true : false,
