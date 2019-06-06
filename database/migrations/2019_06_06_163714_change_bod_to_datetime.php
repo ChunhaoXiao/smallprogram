@@ -14,7 +14,7 @@ class ChangeBodToDatetime extends Migration
     public function up()
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->dateTime('bod')->change();
+            //$table->dateTime('bod')->change();
         });
     }
 
