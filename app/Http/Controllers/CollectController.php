@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Auth;
 use App\Http\Resources\User;
+use App\Http\Resources\Follow;
 
 class CollectController extends Controller
 {
@@ -17,8 +18,7 @@ class CollectController extends Controller
 	{
 		$user = Auth::user();
 		$type = $request->type?? 'collects';
-        //return $user->getCollects($type);
-		return User::collection($user->getCollects($type));
+		return Follow::collection($user->getCollects($type));
     }
 
     public function store(Request $request)

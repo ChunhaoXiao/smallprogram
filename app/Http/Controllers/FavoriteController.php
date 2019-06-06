@@ -18,15 +18,7 @@ class FavoriteController extends Controller
     public function index(Request $request)
     {
         $type = $request->type ?? 'likes';
-    	$user = Auth::user();
-        if($type == 'likes')
-        {
-            $datas = $user->sentFavorites()->with('touser.post')->paginate(10);
-            //return $datas;
-            return FavoriteResource::collection($datas);
-        }
-    	$datas = $user->receivedFavorites()->with('fromuser.post')->paginate(10);
-        //return $datas;
+        $datas = Auth::user()->getFavorites($type);
         return FavoriteResource::collection($datas);
     }
 

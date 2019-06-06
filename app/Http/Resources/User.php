@@ -35,6 +35,9 @@ class User extends JsonResource
             'bod' => $this->post->bod??'',
 
             'post' =>  new PostResource($this->whenLoaded('post')),
+            'blocked' => $this->blacklisted_count,
+            'views' => $this->viewed_count,
+            'is_myself' => $request->user()->id == $this->id,
         ];
     }
 

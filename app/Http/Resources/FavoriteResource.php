@@ -14,16 +14,17 @@ class FavoriteResource extends JsonResource
      */
     public function toArray($request)
     {
-
+        $user = $request->user();
+        $toUser = $this->from_user == $user->id ? $this->touser : $this->fromuser;
         return [
             'id' => $this->id,
             'viewed' => $this->viewed,
-            'nickname' => $request->type == 'likes'? $this->touser->post->nickname : $this->fromuser->post->nickname,
-            'member_id' => $request->type == 'likes' ? $this->to_user : $this->from_user,
-            'avatar' => $request->type == 'likes' ?  $this->touser->avatar_url : $this->fromuser->avatar_url,
+            'nickname' => $toUser->post->nickname,
+            'user_id' => $toUser->post->user_id,
+            'avatar' => $toUser->avatar_url,
             'created_at' => (string)$this->created_at,
-            'bod' => $request->type == 'likes'? $this->touser->post->bod : $this->fromuser->post->bod,
-            'location' => $request->type == 'likes'? $this->touser->post->location[1] : $this->fromuser->post->location[1],
+            'bod' => $toUser->post->bod,
+            'location' => $toUser->post->location[1]?? '',
         ];
     }
 }

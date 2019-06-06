@@ -16,10 +16,15 @@ class Message extends JsonResource
     {
         return [
             'content' => $this->content,
-            'from_user' => new PostResource($this->from_user->post),
-            'to_user' => new PostResource($this->to_user->post),
+            'sender_nickname' => $this->from_user->post->nickname??'',
+            'sender_avatar' => $this->from_user->avatar_url,
+            'recipient_nickname' => $this->to_user->post->nickname??'',
+            'recipient_avatar' => $this->to_user->avatar_url,
+            // 'from_user' => new PostResource($this->from_user->post),
+            // 'to_user' => new PostResource($this->to_user->post),
             'create' => (string)$this->created_at,
             'is_me' => $this->from == $request->user()->id,
+            'is_viewed' => !empty($this->viewed_at),
         ];
     }
 }

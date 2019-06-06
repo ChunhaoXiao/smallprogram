@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PostPictureResource extends JsonResource
+class Blacklist extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,8 +15,11 @@ class PostPictureResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'fullpath' => asset('storage/'.$this->path),
-            'savepath' => $this->path,
+            'nickname' => $this->user->post->nickname,
+            'avatar' => $this->user->avatar_url,
+            'bod' => $this->user->post->bod,
+            'location' => $this->user->post->location[1]??'',
+            'user_id' => $this->user->id,
         ];
     }
 }

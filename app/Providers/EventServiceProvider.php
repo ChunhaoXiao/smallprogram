@@ -21,6 +21,10 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\MemberViewed' => [
             'App\Listeners\UpdateViewHistory',
         ],
+
+        'App\Events\MessageRead' => [
+            'App\Listeners\MarkMessageAsRead',
+        ]
     ];
 
     /**

@@ -20,6 +20,7 @@ class User extends Authenticatable
     ];
 
     protected $with = ['post'];
+    protected $withCount = ['viewed'];
 
     // protected $with = [
     //     'post.pictures',
@@ -110,12 +111,12 @@ class User extends Authenticatable
         if($this->post()->exists())
         {
             $this->post->update($data);
-           // $this->post->savePictures($data['pictures']);
+            $this->post->savePictures($data['pictures']);
             return $this->post;
         }
 
         $post = $this->post()->create($data);
-        //$post->savePictures($data['pictures']);
+        $post->savePictures($data['pictures']);
         return $post;
     }
 
@@ -145,7 +146,7 @@ class User extends Authenticatable
             });
         }
 
-        $user_gender = \Auth::user()->post->gender?? '';
+        $user_gender = \Auth::user()->post->gender?? '男';
         if($user_gender)
         {
             $gender = $user_gender == '男' ? '女': '男';
@@ -153,7 +154,7 @@ class User extends Authenticatable
                 $query->where('gender', $gender);
             });
         }
-        return $query;
+        //return $query;
 
         // if(!$request->user()->post)
         // {
@@ -200,6 +201,14 @@ class User extends Authenticatable
         }]);
     }
 
+    public function scopeBlocked($query, $id)
+    {
+        return $query->withCount(['blacklisted' => function($query) use ($id){
+            $query->where('user_id', $id);
+        }]);
+        //return $query->blacklisted()->where('user_id', $id)->exists();
+    }
+
     public function getOneMessage($id)
     {
         return $this->receivedMessages()->findOrFail($id);
@@ -208,21 +217,24 @@ class User extends Authenticatable
     public function scopeMessage($query)
     {
         $query->withCount(['receivedMessages', 'receivedMessages as new_message' => function($query){
-            $query->where('viewed', 0);
+            $query->whereNull('viewed_at');
         }]);
     }
 
     public function getBlacklists()
     {
-        return $this->blacklists()->with('user')->latest()->paginate(10);
+        return $this->blacklists()->with('user.post')->latest()->paginate(10);
     }
 
-    public function addUserToBlacklist($user_id)
+    public function toggleBlackUser($user_id)
     {
         if($this->blacklists()->where('black_user_id', $user_id)->doesntExist())
         {
-            return $this->blacklists()->create(['black_user_id' => $user_id]);
+            $this->blacklists()->create(['black_user_id' => $user_id]);
+            return 1;
         }
+        $this->blacklists()->where('black_user_id', $user_id)->delete();
+        return -1;
     }
 
     public function removeUserFromBlacklist($user_id)
@@ -247,7 +259,7 @@ class User extends Authenticatable
 
     public function getCollects($type = 'collects')
     {
-        //我的关注的人  
+        //我的关注的人
         if($type == 'collects')
         {
             return $this->collections()->withCount(['collections as intercollect' => function($query){
@@ -259,8 +271,24 @@ class User extends Authenticatable
         {
             return $this->collectioned()->paginate(10);
         }
+    }
 
-        //关注我的人
-       // return $this->colletioned()->paginate(10);
+
+    public function getViewHistory($type)
+    {
+        if($type == 'viewers')
+        {
+            return $this->viewers()->with('viewed.post')->paginate(10);
+        }
+        return $this->viewed()->with('viewers.post')->paginate(10);
+    }
+
+    public function getFavorites($type)
+    {
+        if($type == 'likes')
+        {
+            return $this->sentFavorites()->with('touser.post')->paginate(10);
+        }
+        return $this->receivedFavorites()->with('fromuser.post')->paginate(10);
     }
 }

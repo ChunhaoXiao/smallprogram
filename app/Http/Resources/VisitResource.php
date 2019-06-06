@@ -14,12 +14,14 @@ class VisitResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
-            'nickname' => $request->type == 'viewers' ? $this->viewed->post->nickname:$this->viewers->post->nickname,
-            'avatar' => $request->type == 'viewers' ? $this->viewed->avatar_url:$this->viewers->avatar_url,
-            'location' => $request->type == 'viewers' ? ($this->viewed->post->location[1]??''):($this->viewers->post->location[1]??''),
-            'bod' => $request->type == 'viewers' ? $this->viewed->post->bod:$this->viewers->post->bod,
+        $toUser = $request->user()->id == $this->viewer_id ? $this->viewed : $this->viewers;
 
+        return [
+            'nickname' => $toUser->post->nickname,
+            'user_id' => $toUser->post->user_id,
+            'avatar' => $toUser->avatar_url,
+            'location' => $toUser->post->location[1]?? '',
+            'bod' => $toUser->post->bod,
         ];
     }
 }

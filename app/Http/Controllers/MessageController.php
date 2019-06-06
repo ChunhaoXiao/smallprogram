@@ -9,6 +9,7 @@ use Auth;
 use DB;
 use App\Http\Resources\Message as MessageResource;
 use App\Http\Resources\MessageList;
+use App\Events\MessageRead;
 
 class MessageController extends Controller
 {
@@ -21,20 +22,11 @@ class MessageController extends Controller
 	public function index(Request $request)
 	{
         $page = $request->page?? 1;
-
 		$uid = Auth::id();
-        $datas = Message::mymsg($uid)->select([DB::raw('MAX(id) AS mid'), 'msg_grp'])->groupBy('msg_grp')->orderBy('mid', 'desc')->offset(($page-1) * 10)->limit(10)->get();
-        if($datas->isNotEmpty())
-        {
-            $ids = $datas->pluck('mid');
-            $res = Message::whereIn('id', $ids)->with(['from_user', 'to_user'])->get();
-            return MessageList::collection($res);
-        }
-        return [];
-        
-
-       // $user->receivedMessages()->with('user')->groupBy('');
-		//return $user->receivedMessages()->with('user')->paginate(10);
+        $datas = Message::group($uid)->slice($page)->get();
+        $ids = $datas->pluck('mid');
+        $res = Message::range($ids)->get();
+        return MessageList::collection($res);
 	}
 
     public function store(MessageStoreRequest $request)
@@ -46,22 +38,10 @@ class MessageController extends Controller
 
     public function show($id)
     {
-    	// $user = Auth::user();
-    	// return $user->receivedMessages()->with('user')->findOrFail($id);
         $in = [$id, Auth::id()];
-        $datas =  Message::whereIn('from', $in)->whereIn('to', $in)->with(['from_user.post', 'to_user.post'])->latest()->limit(10)->get();
+        $datas =  Message::dialog($in)->get();
+        event(new MessageRead($datas));
         return MessageResource::collection($datas->reverse());
-        //return $datas;
-    }
-
-    public function update(Request $request)
-    {
-    	$mids = array_filter($request->mids);
-    	if(!empty($mids))
-    	{
-    		Auth::user()->receivedMessages()->whereIn('id', $mids)->update(['viewed' => 1]);
-    	}
-    	return response()->json('success', 200);
     }
 
     public function destroy($id)

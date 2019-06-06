@@ -18,7 +18,7 @@ class UserCollection extends ResourceCollection
 
         return [
             'data' => $this->collection,
-            'mygender' => $request->user()->post ? ($request->user()->post->gender == '男'? 2 : 1) : 0,
+            'mygender' => $request->user()->post ? ($request->user()->post->gender == '男'? 2 : 1) : 2,
         ];
     }
 }

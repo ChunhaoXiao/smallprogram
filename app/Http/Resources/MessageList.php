@@ -14,11 +14,16 @@ class MessageList extends JsonResource
      */
     public function toArray($request)
     {
+        $toUser = $request->user()->id == $this->from ? $this->to_user : $this->from_user;
         return [
-            'avatar' => $this->from == $request->user()->id ? $this->to_user->avatar_url : $this->from_user->avatar_url,
-            'post' =>  $this->from == $request->user()->id ? $this->to_user->post : $this->from_user->post,
-            'created_at' => (string)$this->created_at,
+            'avatar' => $toUser->avatar_url,
+            'nickname' => mb_substr($toUser->post->nickname,0, 10),
+            'bod' => $toUser->post->bod,
+            'location' => $toUser->post->location[1]??'',
+            'created_at' => $this->getDate(),
             'content' => mb_substr($this->content, 0, 30),
+            'is_sender' => $request->user()->id == $this->from,
+            'user_id' => $toUser->post->user_id,
         ];
     }
 }
