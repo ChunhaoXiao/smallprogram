@@ -80,6 +80,10 @@ class Message extends Model
         return $this->created_at->format('n月j日');
     }
 
+    public function unread()
+    {
+        return $this->viewed_at == '1000-01-01 00:00:00';
+    }
     // public static function markAsRead($datas)
     // {
     //      $ids = $datas->filter(function($item){
