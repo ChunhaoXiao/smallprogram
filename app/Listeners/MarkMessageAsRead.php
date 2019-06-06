@@ -31,7 +31,7 @@ class MarkMessageAsRead
         $messages->each(function($item){
             if($item->to == Auth::id() && !$item->viewed_at)
             {   
-                $item->update(['viewed_at' => now()]);
+                $item->update(['viewed_at' => time()]);
             }
         });
     }
