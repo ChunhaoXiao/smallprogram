@@ -76,6 +76,11 @@ class Post extends Model
     	}
     }
 
+    public function getRegtimeAttribute()
+    {
+        return $this->created_at ? $this->created_at->toDateString(): '';
+    }
+
     public function setHobbyAttribute($value)
     {
         if($value)

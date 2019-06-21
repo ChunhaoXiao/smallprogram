@@ -19,7 +19,7 @@ class User extends JsonResource
             'nickname' => $this->post->nickname??'',
             'location' => $this->post->location[1]??'',
             'avatar' => $this->avatar_url,
-            'register_time' => $this->post->created_at->toDateString(),
+            'register_time' => $this->post->regtime,//post->created_at->toDateString(),
             'bod' => $this->post->birth,
             'gender' => $this->post->gender,
             'marriage' => $this->post->marriage,
