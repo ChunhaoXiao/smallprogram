@@ -19,7 +19,7 @@ class User extends JsonResource
             'nickname' => $this->post->nickname??'',
             'location' => $this->post->location[1]??'',
             'avatar' => $this->avatar_url,
-            'register_time' => $this->post->created_at,
+            'register_time' => $this->post->created_at->toDateString(),
             'bod' => $this->post->birth,
             'gender' => $this->post->gender,
             'marriage' => $this->post->marriage,
@@ -49,7 +49,7 @@ class User extends JsonResource
 
             $this->mergeWhen($request->path() == 'api/posts', [
                 'my_location' => $this->post->location,
-                'my_bod' => $this->post->bod->toDateString(),
+                'my_bod' => !empty($this->post->bod)? $this->post->bod->toDateString():'',
                 'my_content' => $this->post->content,
             ]),
 
